@@ -348,3 +348,11 @@
 .PhoneInputInput::placeholder {
   color: #1a1d21;
 }
+
+.equal-width-fields {
+  display: flex;
+  gap: 16px; /* Optional: space between fields */
+}
+.equal-width-fields > * {
+  flex: 1;
+}
