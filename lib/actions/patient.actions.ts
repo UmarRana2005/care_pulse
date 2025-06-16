@@ -1,8 +1,10 @@
 'use server';
 import { ID, Query } from "node-appwrite"
-import { users } from "../appwrite.config"
+import { DATABASE_ID, databases, NEXT_PUBLIC_APPWRITE_PROJECT_KEY, NEXT_PUBLIC_BUCKET_ID, NEXT_PUBLIC_ENDPOINT, PATIENT_COLLECTION_ID, storage, users } from "../appwrite.config"
 import { parseStringify } from "../utils";
-
+import { IdentificationTypes } from "@/constants";
+import {InputFile} from  "node-appwrite/file"
+import { stringify } from "querystring";
 export const createUser = async (user: CreateUserParams) => {
     try {
         const newUser = await users.create(
@@ -32,5 +34,32 @@ export const getUser = async (userId: string) => {
     } catch (error: any) {
         console.error("Error fetching user:", error);
         throw error;
+    }
+}
+
+export const registerPatient = async ({identificationDocument, ... patient}:RegisterUserParams)=>{
+    try{
+        let file;
+        if(identificationDocument){
+            const inputFile = InputFile.fromBuffer(
+                identificationDocument?.get("blobFile") as Blob,
+                identificationDocument?.get("fileName") as string
+            )
+
+            file = await storage.createFile(NEXT_PUBLIC_BUCKET_ID!, ID.unique(), inputFile)
+        }
+
+        const newPatient = await databases.createDocument(
+            DATABASE_ID!,
+            PATIENT_COLLECTION_ID!,
+            ID.unique(),
+            {
+                identification_document_id: file?.$id || null,
+                identificationDocumentUrl: `${NEXT_PUBLIC_ENDPOINT}/storage/buckets/${NEXT_PUBLIC_BUCKET_ID}/files/${file?.$id}/view?project=${NEXT_PUBLIC_APPWRITE_PROJECT_KEY}`,...patient
+            }
+        )
+        return stringify(newPatient)
+    } catch(error){
+        console.log(error);
     }
 }
