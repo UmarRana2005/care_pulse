@@ -1,8 +1,6 @@
-// lib/actions/create-user.ts
 "use server"
 
 import { createUser as createAppwriteUser } from "./patient.actions";
-import { revalidatePath } from "next/cache";
 
 export const createUserAction = async (formData: {
   name: string;

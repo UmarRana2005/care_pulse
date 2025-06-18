@@ -37,6 +37,21 @@ export const getUser = async (userId: string) => {
     }
 }
 
+export const getPatient = async (userId: string) => {
+    try {
+        const patient = await databases.listDocuments(
+            DATABASE_ID!, 
+            PATIENT_COLLECTION_ID!, 
+            [Query.equal('userId', [userId])]
+        );
+        return parseStringify(patient.documents[0]);
+    } catch (error: any) {
+        console.error("Error fetching patient:", error);
+        throw error;
+    }
+}
+
+
 export const registerPatient = async ({identificationDocument, ... patient}:RegisterUserParams)=>{
     try{
         let file;
@@ -54,11 +69,11 @@ export const registerPatient = async ({identificationDocument, ... patient}:Regi
             PATIENT_COLLECTION_ID!,
             ID.unique(),
             {
-                identification_document_id: file?.$id || null,
+                identificationDocumentId: file?.$id || null,
                 identificationDocumentUrl: `${NEXT_PUBLIC_ENDPOINT}/storage/buckets/${NEXT_PUBLIC_BUCKET_ID}/files/${file?.$id}/view?project=${NEXT_PUBLIC_APPWRITE_PROJECT_KEY}`,...patient
             }
         )
-        return stringify(newPatient)
+        return parseStringify(newPatient)
     } catch(error){
         console.log(error);
     }
